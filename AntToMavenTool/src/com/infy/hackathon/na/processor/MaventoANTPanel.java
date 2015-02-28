@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.swing.BoxLayout;
 import javax.swing.GroupLayout;
@@ -40,7 +41,7 @@ public class MaventoANTPanel extends JPanel {
          
         JComponent projectFolderPanel = makeProjectFolderPanel("Specify ANT project folder path:",tabbedPane);
        
-        //projectFolderPanel.setPreferredSize(new Dimension(600, 400));
+        projectFolderPanel.setPreferredSize(new Dimension(700, 400));
        // JTextComponent jTextField = new JTextField();
         tabbedPane.addTab("Project Folder", icon, projectFolderPanel,
                 "Update Project Folder");
@@ -51,23 +52,28 @@ public class MaventoANTPanel extends JPanel {
         tabbedPane.addTab("Configure Source", icon, panel2,
                 "Update Source Folder Name");
         tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
-         
-        JComponent panel3 = makeTestFolderPanel("Test case folder with reference to project root: ", tabbedPane);
-        tabbedPane.addTab("Configure Test", icon, panel3,
-                "Update Test Folder Name");
-        tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
         
-        JComponent panel4 = makeWebContentFolderPanel(
-                "WebContent folder with reference to project root: ", tabbedPane);
-        tabbedPane.addTab("Configure Web Resources", icon, panel4,
-                "Update WebContent Folder Name");
+        JComponent panel3 = makeExtSourcePanel("Source folder with reference to project root: ",tabbedPane);
+        tabbedPane.addTab("External Sources", icon, panel3,
+                "Update Source Folder Name");
+        tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
+         
+        JComponent panel4 = makeTestFolderPanel("Test case folder with reference to project root: ", tabbedPane);
+        tabbedPane.addTab("Configure Test", icon, panel4,
+                "Update Test Folder Name");
         tabbedPane.setMnemonicAt(3, KeyEvent.VK_4);
         
-        JComponent panel5 = makeLibraryPanel(
-                "Lib folder with reference to project root: ", tabbedPane);
-        tabbedPane.addTab("Configure Libraries", icon, panel5,
-                "Update Lib Folder Name");
+        JComponent panel5 = makeWebContentFolderPanel(
+                "WebContent folder with reference to project root: ", tabbedPane);
+        tabbedPane.addTab("Configure Web Resources", icon, panel5,
+                "Update WebContent Folder Name");
         tabbedPane.setMnemonicAt(4, KeyEvent.VK_5);
+        
+        JComponent panel6 = makeLibraryPanel(
+                "Lib folder with reference to project root: ", tabbedPane);
+        tabbedPane.addTab("Configure Libraries", icon, panel6,
+                "Update Lib Folder Name");
+        tabbedPane.setMnemonicAt(5, KeyEvent.VK_6);
         
         
          
@@ -93,6 +99,29 @@ public class MaventoANTPanel extends JPanel {
         return panel;
     }
     
+    protected JComponent makeExtSourcePanel(String text, final JTabbedPane tabbedPane) {
+        JPanel panel = new JPanel(false);
+        
+        JLabel artFiller = new JLabel("Artifact Id");
+        JTextField artifactId = new JTextField(20);
+        panel.add(artFiller);
+        panel.add(artifactId);
+        
+        JLabel grpFiller = new JLabel("GroupId");
+        JTextField groupId = new JTextField(20);
+        panel.add(grpFiller);
+        panel.add(groupId);
+        
+        JLabel verFiller = new JLabel("Version Id");
+        JTextField versionId = new JTextField(20);
+        panel.add(verFiller);
+        panel.add(versionId);
+        
+        navigateTabNextOptional(panel,tabbedPane,3,"Next","artifactId",artifactId,"groupId",groupId,"versionId",versionId);    
+        navigateTabBack(panel,tabbedPane,1,"Back");  
+        return panel;
+    }
+    
     protected JComponent makeTestFolderPanel(String text, final JTabbedPane tabbedPane) {
         JPanel panel = new JPanel(false);
         JLabel filler = new JLabel(text);
@@ -101,8 +130,8 @@ public class MaventoANTPanel extends JPanel {
         JTextField testFolderPath = new JTextField(20);
         panel.add(filler);
         panel.add(testFolderPath);
-        navigateTabNext(panel,tabbedPane,3,"Next",AntDirectory.TESTSRC.toString(),testFolderPath);    
-        navigateTabBack(panel,tabbedPane,1,"Back");  
+        navigateTabNext(panel,tabbedPane,4,"Next",AntDirectory.TESTSRC.toString(),testFolderPath);    
+        navigateTabBack(panel,tabbedPane,2,"Back");  
         return panel;
     }
     
@@ -114,8 +143,8 @@ public class MaventoANTPanel extends JPanel {
         JTextField webContentFolderPath = new JTextField(20);
         panel.add(filler);
         panel.add(webContentFolderPath);
-        navigateTabNext(panel,tabbedPane,4,"Next",AntDirectory.WEBCONTENT.toString(),webContentFolderPath);   
-        navigateTabBack(panel,tabbedPane,2,"Back");
+        navigateTabNext(panel,tabbedPane,5,"Next",AntDirectory.WEBCONTENT.toString(),webContentFolderPath);   
+        navigateTabBack(panel,tabbedPane,3,"Back");
         return panel;
     }
     
@@ -138,12 +167,13 @@ public class MaventoANTPanel extends JPanel {
         		antResources.put(AntDirectory.LIB.toString(), libFolderPath.getText());
         		System.out.println("antResources: " + antResources);
         		String antResourcesStr = "";
-        		int panelCount=0;
-        		for(Map.Entry<String, String> entry : antResources.entrySet()){
-        			panelCount++;
+        		Map<String, String> antResourcesSorted = new TreeMap<String, String>(antResources);
+        		for(Map.Entry<String, String> entry : antResourcesSorted.entrySet()){
         			antResourcesStr = antResourcesStr + entry.getKey() + ": " + entry.getValue() + "\n";
         			}
-        		if(panelCount!=5||((antResources.get(AntDirectory.LIB.toString()).equalsIgnoreCase("")||antResources.get(AntDirectory.LIB.toString())==null))){
+        		if((antResources.get(AntDirectory.LIB.toString()).equalsIgnoreCase("")||antResources.get(AntDirectory.LIB.toString())==null)
+        				||!antResourcesStr.contains(AntDirectory.PROJECT_FOLDER.toString())||!antResourcesStr.contains(AntDirectory.SRC.toString())
+        				||!antResourcesStr.contains(AntDirectory.TESTSRC.toString())||!antResourcesStr.contains(AntDirectory.WEBCONTENT.toString())){
         			 if(!antResourcesStr.contains(AntDirectory.PROJECT_FOLDER.toString())){
          				JOptionPane.showMessageDialog(panel, "Project Folder"+" Incomplete data entry");
          			
@@ -156,10 +186,10 @@ public class MaventoANTPanel extends JPanel {
         			}
         			else if(!antResourcesStr.contains(AntDirectory.WEBCONTENT.toString())){
         				JOptionPane.showMessageDialog(panel, "WebContent folder"+" Incomplete data entry");        			
+        			}else if (antResources.get(AntDirectory.LIB.toString()).equalsIgnoreCase("")||antResources.get(AntDirectory.LIB.toString())==null){
+        				JOptionPane.showMessageDialog(panel, "lib folder"+" Incomplete data entry");  
         			}
-        			else {
-        				JOptionPane.showMessageDialog(panel, "Lib folder"+" Incomplete data entry");
-        			}
+        			
         			
     			} else{
     				JOptionPane.showMessageDialog(panel, antResourcesStr);
@@ -174,7 +204,7 @@ public class MaventoANTPanel extends JPanel {
         });
        // navigateTab(panel,tabbedPane,3,"Next");       
         
-        navigateTabBack(panel,tabbedPane,3,"Back");
+        navigateTabBack(panel,tabbedPane,4,"Back");
         
         return panel;
     }
@@ -222,6 +252,26 @@ public class MaventoANTPanel extends JPanel {
          		System.out.println("antResources: " + antResources);
          		tabbedPane.setSelectedIndex(index);
          		}
+         	}
+         	
+         });
+    }
+    
+    private void navigateTabNextOptional(final JPanel panel,final JTabbedPane tabbedPane,final int index, String label,
+    		final String artifactId, final JTextField artifactValue,final String groupId, 
+    		final JTextField groupValue,final String versionId, final JTextField versionValue){
+    	 JButton backButton = new JButton(label);
+         backButton.setBounds(75, 82, 90, 31);
+        // nextButton.
+         panel.add(backButton);
+         backButton.addActionListener(new ActionListener() {
+         	public void actionPerformed(ActionEvent arg0) {
+         		
+         		antResources.put(artifactId, artifactValue.getText());
+         		antResources.put(groupId, groupValue.getText());
+         		antResources.put(versionId, versionValue.getText());
+         		System.out.println("antResources: " + antResources);
+         		tabbedPane.setSelectedIndex(index);
          	}
          	
          });
