@@ -146,7 +146,7 @@ public class PomGenerator {
 			returnMavenArtifactBean = new MavenArtifactBean();
 			returnMavenArtifactBean.setA(jarName==null?"<ChangeIt>":jarName);
 			returnMavenArtifactBean.setG(jarName==null?"<ChangeIt>":jarName);
-			returnMavenArtifactBean.setLatestVersion(version==null?" ":version);
+			returnMavenArtifactBean.setLatestVersion((version==null||version.length()==0)?"1.0":version);
 			returnMavenArtifactBean.setScope("system");
 			String targetDir = targetFolder+"\\"+jarFilePath.substring(jarFilePath.lastIndexOf("\\")+ 1) ;
 			targetDir = "${basedir}\\"+targetDir.substring(targetDir.lastIndexOf("lib"));
