@@ -72,7 +72,7 @@ public class PomGenerator {
 				model.setArtifactId("CUSTOM-APPNAME");
 				model.setVersion("0.0.1-SNAPSHOT");
 				model.setPackaging("war");
-				
+				model.setModelVersion("4.0.0");
 				List<Dependency> dependencyList = new ArrayList<Dependency>();
 				for(MavenArtifactBean bean: pomDependencies){
 					Dependency dependency = new Dependency();
