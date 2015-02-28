@@ -106,6 +106,67 @@ public class PomGenerator {
 		
 	}
 	
+	public String pomFileGenerator(String libDir, String targetMavenDir, String groupId, String artifactId, String version){
+		
+		List<MavenArtifactBean> pomDependencies = PomGenerator
+				.getPomDependencies(libDir,targetMavenDir);
+		String pomFilePath = targetMavenDir+"\\pom.xml";
+		File file = new File(pomFilePath);
+		String result="failure";
+		Writer writer = null;
+		try{
+			if(!file.exists())
+			 file.createNewFile();
+			else{
+			 file.delete();
+			 file.createNewFile();
+			}
+			writer = new FileWriter(file);
+			Model model = new Model();
+			model.setGroupId( "CUSTOM-APPNAME" );
+			model.setArtifactId("CUSTOM-APPNAME");
+			model.setVersion("0.0.1-SNAPSHOT");
+			model.setPackaging("war");
+			model.setModelVersion("4.0.0");
+			List<Dependency> dependencyList = new ArrayList<Dependency>();
+			for(MavenArtifactBean bean: pomDependencies){
+				Dependency dependency = new Dependency();
+				dependency.setArtifactId(bean.getA());
+				dependency.setGroupId(bean.getG());
+				dependency.setVersion(bean.getLatestVersion());
+				if(bean.getScope()!=null && bean.getScope().equals("system")){
+					dependency.setScope(bean.getScope());
+					dependency.setSystemPath(bean.getSystemPath());
+				}
+				dependencyList.add(dependency);
+			}
+			if(groupId!=null && artifactId!=null && version!=null){
+				Dependency dep = new Dependency();
+				dep.setArtifactId(artifactId);
+				dep.setGroupId(groupId);
+				dep.setVersion(version);
+				dependencyList.add(dep);
+			}
+			
+			model.setDependencies(dependencyList);
+			new MavenXpp3Writer().write(writer, model);
+			result = "success";
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally {
+			try {
+				writer.flush();
+				writer.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		}
+		return result;
+	
+}
+	
 	
 	private static MavenArtifactBean getArtifactId(String jarFilePath, String targetMavenDir) throws NoSuchAlgorithmException, IOException{
 		
