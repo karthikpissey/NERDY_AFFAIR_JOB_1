@@ -4,19 +4,19 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.SimpleFormController;
 
 import com.vaannila.domain.User;
-import com.vaannila.service.UserServiceTest;
+import com.vaannila.service.UserService;
 
 @SuppressWarnings("deprecation")
 public class UserController extends SimpleFormController {
 
-	private UserServiceTest userService;
+	private UserService userService;
 
 	public UserController()	{
 		setCommandClass(User.class);
 		setCommandName("user");
 	}
 	
-	public void setUserService(UserServiceTest userService) {
+	public void setUserService(UserService userService) {
 		this.userService = userService;
 	}
 
