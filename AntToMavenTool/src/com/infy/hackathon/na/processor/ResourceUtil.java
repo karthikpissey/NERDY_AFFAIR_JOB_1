@@ -14,14 +14,14 @@ import com.infy.hackathon.na.constants.MavenFile;
  */
 public class ResourceUtil {
 	
-	public void createProjectResource() throws IOException{
+	public boolean createProjectResource() throws IOException{
 		System.out.println("Creating the project folder...");
 		ResourceBundle bundle = ResourceBundle.getBundle("MavenResources");
 		if(createProjectBase(bundle)){
 			System.out.println("Project base folder has been created successfully!!!");
 		}else{
 			System.out.println("Failed to create the project folder.");
-			return;
+			return false;
 		}
 		System.out.println("Creating the Sub folders...");
 		for(MavenDirectory directory : MavenDirectory.values()){
@@ -33,6 +33,7 @@ public class ResourceUtil {
 			createFile(file,bundle);
 		}
 		System.out.println("Maven project has been created successfully!!!");
+		return true;
 	}
 	
 	public boolean createDirectory(MavenDirectory directory,ResourceBundle bundle){	
