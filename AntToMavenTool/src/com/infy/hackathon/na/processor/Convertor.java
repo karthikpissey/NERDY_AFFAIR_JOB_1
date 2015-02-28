@@ -6,7 +6,7 @@ package com.infy.hackathon.na.processor;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -38,6 +38,7 @@ public class Convertor {
 
 	}*/
 	
+	
 	public String convertAntToMaven(Map<String, String> antResources){
 		
 		ResourceUtil resourceUtil=new ResourceUtil();
@@ -67,39 +68,75 @@ public class Convertor {
 		//Copying the src files
 		String antSrcDir = antProjectFolder + "//" + antResources.get(AntDirectory.SRC.toString());
 		String mavenSrcDir = mavenProjectFolder+ mavenResources.getString(MavenDirectory.SRC_MAIN_JAVA.toString());
-		copyFiles(antSrcDir, mavenSrcDir, ".java");
+		copyFiles(antSrcDir, mavenSrcDir, "java");
 		
 		// Copying the properties referred in Source
 		String mavenSrcResDir = mavenProjectFolder+ mavenResources.getString(MavenDirectory.SRC_MAIN_RESOURCES.toString());
-		copyFiles(antSrcDir, mavenSrcResDir, ".properties");
+		copyFiles(antSrcDir, mavenSrcResDir, "properties");
 		
 		//Copying the Test Cases
 		String antTestDir = antProjectFolder + "//" + antResources.get(AntDirectory.TESTSRC.toString());
 		String mavenTestDir = mavenProjectFolder+ mavenResources.getString(MavenDirectory.SRC_TEST_JAVA.toString());
-		copyFiles(antTestDir, mavenTestDir, ".java");
+		copyFiles(antTestDir, mavenTestDir, "java");
 		
 		// Copying the properties referred in Test Cases
 		String mavenTestResDir = mavenProjectFolder+ mavenResources.getString(MavenDirectory.SRC_TEST_RESOURCES.toString());
-		copyFiles(antTestDir, mavenTestResDir, ".properties");
+		copyFiles(antTestDir, mavenTestResDir, "properties");
+		
+		String antWebDir = antProjectFolder + "//" + antResources.get(AntDirectory.WEBCONTENT.toString());
+		String mavenWebDir = mavenProjectFolder+ mavenResources.getString(MavenDirectory.SRC_MAIN_WEBAPP.toString());
+		copyFiles(antWebDir, mavenWebDir, null);
+		
 		
 		String antLibDir = antProjectFolder + "//" + antResources.get(AntDirectory.LIB.toString());
 		new PomGenerator().pomFileGenerator(antLibDir, mavenProjectFolder);
 		
+		//Copying the webcontent files
+		//copyFiles(AntDirectory.WEBAPP,MavenDirectory.SRC_MAIN_WEBAPP);
+		
+		//Copying the Test Files
+		//copyFiles(AntDirectory.TESTSRC,MavenDirectory.SRC_TEST_JAVA);
+		
 		return mavenProjectFolder;
 	}
+	
+	
 
 public void copyFiles(String antDir,String mavenDir, String fileExtension) throws Exception{		
 			
 			File antFile = new File(antDir);
 			File mavenFile = new File(mavenDir);
 					
-			IOFileFilter txtSuffixFilter = FileFilterUtils.suffixFileFilter(fileExtension);
-			 IOFileFilter txtFiles = FileFilterUtils.andFileFilter(FileFileFilter.FILE, txtSuffixFilter);
-			  // Create a filter for either directories or ".txt" files
-			  FileFilter filter = FileFilterUtils.orFileFilter(DirectoryFileFilter.DIRECTORY, txtFiles);
-		
-			  // Copy using the filter
-			 FileUtils.copyDirectory(antFile, mavenFile, filter);
+			
+			  if(fileExtension!=null){
+			  
+			  String[] extension = new String[]{fileExtension};
+			  
+			  List<File> files = (List<File>) FileUtils.listFiles(antFile, extension, true);
+			  
+			  for (File file : files) {
+				  
+				  String filePath = file.getAbsolutePath();
+				  File tempFile = new File(antDir);
+				  int index = tempFile.getAbsolutePath().length();
+				  
+				 
+				 String subString =filePath.substring(index,filePath.length());
+				 
+				 File antTempFile = new File(antDir+subString);
+				 File mavenTempFile = new File(mavenDir+subString);
+				
+				  
+				  
+				  FileUtils.copyFile(antTempFile,mavenTempFile);
+				
+			}
+			  
+			  }else{
+				  FileUtils.copyDirectory(antFile, mavenFile);
+			  }
+			  
+			
 		
 	}
 	
@@ -152,5 +189,12 @@ public void copyFiles(String antDir,String mavenDir, String fileExtension) throw
 		
 		
 	}
+	
+	public static void main(String[] args) throws Exception{
+		String antDir = "C:/workspace/NERDY_AFFAIR_JOB_1/SampleWebAppAnt/src";
+		String mavenDir = "C:/SampleMavenApp/src/main/java";
+		
+		new Convertor().copyFiles(antDir, mavenDir,"properties");
+		}
 
 }
