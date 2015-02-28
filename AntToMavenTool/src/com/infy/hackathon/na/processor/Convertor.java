@@ -43,10 +43,10 @@ public class Convertor {
 		copyFiles(AntDirectory.SRC, MavenDirectory.SRC_MAIN_JAVA);
 		
 		//Copying the webcontent files
-		copyFiles(AntDirectory.WEBAPP,MavenDirectory.SRC_MAIN_WEBAPP);
+		//copyFiles(AntDirectory.WEBAPP,MavenDirectory.SRC_MAIN_WEBAPP);
 		
 		//Copying the Test Files
-		copyFiles(AntDirectory.TESTSRC,MavenDirectory.SRC_TEST_JAVA);
+		//copyFiles(AntDirectory.TESTSRC,MavenDirectory.SRC_TEST_JAVA);
 		
 
 	}
