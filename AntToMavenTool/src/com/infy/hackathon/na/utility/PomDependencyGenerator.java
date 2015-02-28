@@ -2,8 +2,10 @@ package com.infy.hackathon.na.utility;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
@@ -13,11 +15,13 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.infy.hackathon.na.constants.AntToMavenConstants;
 import com.infy.hackathon.na.constants.MavenArtifactBean;
 
 public class PomDependencyGenerator {
@@ -27,23 +31,73 @@ public class PomDependencyGenerator {
 	private static final String CHECKSUM_QUERY_PARAMS="%22&rows=20&wt=json";
 	private static final String CHECKSUM_SEARCH="CHECKSUM";
 	private static final String JARNAME_SEARCH="JARNAME";
+	
 	public static void main(String[] args) {
 		
-		try {
-			ResourceBundle bundle = ResourceBundle.getBundle("MavenResources");
-			System.out.println("Begining to unzip the uploaded file....");
-			FileUtility.extractUploadedZipProject(bundle.getString(AntToMavenConstants.UPLOADED_ZIP_DIR), bundle.getString(AntToMavenConstants.UNZIPPED_PROJECT_DIR));
-			PomDependencyGenerator.getPomDependencies();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	
+			String libDir="C:\\Users\\kalluri\\git\\hackathon\\NERDY_AFFAIR_JOB_1\\SampleWebAppAnt\\WebContent\\WEB-INF\\lib"; 
+			String targetMavenDir="C:\\SampleMavenApp"; 
+			try{
+			new PomDependencyGenerator().pomFileGenerator(libDir, targetMavenDir);
+			}catch(Exception e){
+				
+			}
+			
+			/*System.out.println("Begining to unzip the uploaded file....");
+			//FileUtility.extractUploadedZipProject(bundle.getString(AntToMavenConstants.UPLOADED_ZIP_DIR), bundle.getString(AntToMavenConstants.UNZIPPED_PROJECT_DIR));
+			*/
+			
 		
 		
 		
 	}
+		
+	public String pomFileGenerator(String libDir, String targetMavenDir){
+		
+			List<MavenArtifactBean> pomDependencies = PomDependencyGenerator
+					.getPomDependencies(libDir,targetMavenDir);
+			String pomFilePath = targetMavenDir+"\\pom.xml";
+			File file = new File(pomFilePath);
+			String result="failure";
+			try{
+				if(!file.exists())
+				 file.createNewFile();
+				else{
+				 file.delete();
+				 file.createNewFile();
+				}
+				Writer w = new FileWriter(file);
+				Model model = new Model();
+				model.setGroupId( "CUSTOM-APPNAME" );
+				model.setArtifactId("CUSTOM-APPNAME");
+				model.setVersion("0.0.1-SNAPSHOT");
+				model.setPackaging("war");
+				
+				List<Dependency> dependencyList = new ArrayList<Dependency>();
+				for(MavenArtifactBean bean: pomDependencies){
+					Dependency dependency = new Dependency();
+					dependency.setArtifactId(bean.getA());
+					dependency.setGroupId(bean.getG());
+					dependency.setVersion(bean.getLatestVersion());
+					if(bean.getScope()!=null && bean.getScope().equals("system")){
+						dependency.setScope(bean.getScope());
+						dependency.setSystemPath(bean.getSystemPath());
+					}
+					dependencyList.add(dependency);
+				}
+				
+				model.setDependencies(dependencyList);
+				new MavenXpp3Writer().write(w, model);
+				result = "success";
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+			return result;
+		
+	}
 	
-	public static MavenArtifactBean getArtifactId(String jarFilePath) throws NoSuchAlgorithmException, IOException{
+	
+	private static MavenArtifactBean getArtifactId(String jarFilePath, String targetMavenDir) throws NoSuchAlgorithmException, IOException{
 		
 		String jarName = jarFilePath.substring(jarFilePath.lastIndexOf("\\")+1,jarFilePath.indexOf("jar")-1);
 		
@@ -75,8 +129,7 @@ public class PomDependencyGenerator {
 
 		}
 		if (mavenArtifacts == null || mavenArtifacts.size() == 0) {
-			ResourceBundle bundle = ResourceBundle.getBundle("MavenResources");
-			String targetFolder = bundle.getString("APP_NAME_SPACE")+bundle.getString("SRC_MAIN_WEBINF_LIB")+"\\";
+			String targetFolder = targetMavenDir+"\\"+"lib";
 			File file = new File(targetFolder);
 			if (!file.exists()) {
 				FileUtils.forceMkdir(file);
@@ -91,18 +144,21 @@ public class PomDependencyGenerator {
 			 */
 			
 			returnMavenArtifactBean = new MavenArtifactBean();
-			returnMavenArtifactBean.setA(jarName);
-			returnMavenArtifactBean.setG(jarName);
-			returnMavenArtifactBean.setLatestVersion(version);
+			returnMavenArtifactBean.setA(jarName==null?"<ChangeIt>":jarName);
+			returnMavenArtifactBean.setG(jarName==null?"<ChangeIt>":jarName);
+			returnMavenArtifactBean.setLatestVersion(version==null?" ":version);
 			returnMavenArtifactBean.setScope("system");
-			returnMavenArtifactBean.setSystemPath(targetFolder
-					+ jarFilePath.substring(jarFilePath.lastIndexOf("\\") + 1));
+			String targetDir = targetFolder+"\\"+jarFilePath.substring(jarFilePath.lastIndexOf("\\")+ 1) ;
+			targetDir = "${basedir}\\"+targetDir.substring(targetDir.lastIndexOf("lib"));
+			targetDir = targetDir.replace("\\", "/");
+			returnMavenArtifactBean.setSystemPath(targetDir);
+			returnMavenArtifactBean.setId(jarName==null?"<ChangeIt>":jarName);
 		}
 		return returnMavenArtifactBean;
 		
 	}
 	
-	public static List<MavenArtifactBean> getAllMavenArtifactBeans(JsonObject obj,String searchkey){
+	private static List<MavenArtifactBean> getAllMavenArtifactBeans(JsonObject obj,String searchkey){
 		JsonObject responseObj = obj.getAsJsonObject("response");
 		JsonArray mavenRepoSearchResults = responseObj.getAsJsonArray("docs");
 		List<MavenArtifactBean> mavenArtifacts = new ArrayList<MavenArtifactBean>();
@@ -125,7 +181,7 @@ public class PomDependencyGenerator {
 		return mavenArtifacts;
 	}
 	
-	public static JsonObject invokeMavenRepoService(String searchType, String searchPhrase){
+	private static JsonObject invokeMavenRepoService(String searchType, String searchPhrase){
 		searchPhrase=searchPhrase.replace(" ", "%20");
 		String mavenRestURL = "";
 		JsonObject returnObject = null;
@@ -163,10 +219,9 @@ public class PomDependencyGenerator {
 	}
 	
 	
-	public static List<MavenArtifactBean>  getPomDependencies(){
+	private static List<MavenArtifactBean>  getPomDependencies(String libDir, String targetMavenDir){
 		System.out.println("Started bui");
-		ResourceBundle bundle = ResourceBundle.getBundle("MavenResources");
-		File jarHeadDir = new File(bundle.getString(AntToMavenConstants.LIB_DIR));
+		File jarHeadDir = new File(libDir);
 		File[] jarDir = jarHeadDir.listFiles();
 		List<MavenArtifactBean> dependencyBeans = null; 
 		if (jarDir != null) {
@@ -183,7 +238,7 @@ public class PomDependencyGenerator {
 				if (jarFilePath.endsWith(".jar")) {
 					try {
 						MavenArtifactBean artifactId = PomDependencyGenerator
-								.getArtifactId(jarFilePath);
+								.getArtifactId(jarFilePath,targetMavenDir);
 						if (artifactId != null)
 							dependencyBeans.add(artifactId);
 					} catch (NoSuchAlgorithmException e) {
