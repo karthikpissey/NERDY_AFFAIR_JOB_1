@@ -2,15 +2,17 @@ package com.infy.hackathon.na.utility;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.apache.commons.io.FileUtils;
 
 public class FileUtility {
+	Properties props = new Properties();
+	
 	
 	public static void main(String[] args) {
 		try {
