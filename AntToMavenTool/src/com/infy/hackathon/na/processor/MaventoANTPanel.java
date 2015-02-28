@@ -11,6 +11,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.BoxLayout;
+import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -34,7 +36,7 @@ public class MaventoANTPanel extends JPanel {
         super(new GridLayout(1, 1));
          
         JTabbedPane tabbedPane = new JTabbedPane();
-        ImageIcon icon = createImageIcon("images/middle.gif");
+       ImageIcon icon = null;
          
         JComponent projectFolderPanel = makeProjectFolderPanel("Specify ANT project folder path:",tabbedPane);
        
@@ -45,22 +47,29 @@ public class MaventoANTPanel extends JPanel {
         
         tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
          
-        JComponent panel2 = makeSourceFolderPanel("Enter Source Folder Path",tabbedPane);
+        JComponent panel2 = makeSourceFolderPanel("Source folder with reference to project root: ",tabbedPane);
         tabbedPane.addTab("Configure Source", icon, panel2,
                 "Update Source Folder Name");
         tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
          
-        JComponent panel3 = makeTestFolderPanel("Enter JUnit Test Folder Path", tabbedPane);
+        JComponent panel3 = makeTestFolderPanel("Test case folder with reference to project root: ", tabbedPane);
         tabbedPane.addTab("Configure Test", icon, panel3,
                 "Update Test Folder Name");
         tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
-         
-        JComponent panel4 = makeLibraryPanel(
-                "Enter Lib Folder Path", tabbedPane);
-        panel4.setPreferredSize(new Dimension(410, 50));
-        tabbedPane.addTab("Configure Libraries", icon, panel4,
-                "Update Lib Folder Name");
+        
+        JComponent panel4 = makeWebContentFolderPanel(
+                "WebContent folder with reference to project root: ", tabbedPane);
+        tabbedPane.addTab("Configure Web Resources", icon, panel4,
+                "Update WebContent Folder Name");
         tabbedPane.setMnemonicAt(3, KeyEvent.VK_4);
+        
+        JComponent panel5 = makeLibraryPanel(
+                "Lib folder with reference to project root: ", tabbedPane);
+        tabbedPane.addTab("Configure Libraries", icon, panel5,
+                "Update Lib Folder Name");
+        tabbedPane.setMnemonicAt(4, KeyEvent.VK_5);
+        
+        
          
         //Add the tabbed pane to this panel.
         add(tabbedPane);
@@ -90,14 +99,23 @@ public class MaventoANTPanel extends JPanel {
         filler.setHorizontalAlignment(JLabel.LEFT);
         filler.setVerticalAlignment(JLabel.TOP);
         JTextField testFolderPath = new JTextField(20);
-       
         panel.add(filler);
         panel.add(testFolderPath);
-        
-        navigateTabBack(panel,tabbedPane,1,"Back");
-        
         navigateTabNext(panel,tabbedPane,3,"Next",AntDirectory.TESTSRC.toString(),testFolderPath);    
-        
+        navigateTabBack(panel,tabbedPane,1,"Back");  
+        return panel;
+    }
+    
+    protected JComponent makeWebContentFolderPanel(String text, final JTabbedPane tabbedPane) {
+        JPanel panel = new JPanel(false);
+        JLabel filler = new JLabel(text);
+        filler.setHorizontalAlignment(JLabel.LEFT);
+        filler.setVerticalAlignment(JLabel.TOP);
+        JTextField webContentFolderPath = new JTextField(20);
+        panel.add(filler);
+        panel.add(webContentFolderPath);
+        navigateTabNext(panel,tabbedPane,4,"Next",AntDirectory.WEBCONTENT.toString(),webContentFolderPath);   
+        navigateTabBack(panel,tabbedPane,2,"Back");
         return panel;
     }
     
@@ -110,9 +128,7 @@ public class MaventoANTPanel extends JPanel {
        
         panel.add(filler);
         panel.add(libFolderPath);
-        
-        navigateTabBack(panel,tabbedPane,2,"Back");
-        
+       
         JButton subButton = new JButton("Submit");
         subButton.setBounds(75, 82, 90, 31);
        // nextButton.
@@ -127,17 +143,19 @@ public class MaventoANTPanel extends JPanel {
         			panelCount++;
         			antResourcesStr = antResourcesStr + entry.getKey() + ": " + entry.getValue() + "\n";
         			}
-        		if(panelCount!=4||((antResources.get(AntDirectory.LIB.toString()).equalsIgnoreCase("")||antResources.get(AntDirectory.LIB.toString())==null))){
-        			if(!antResourcesStr.contains(AntDirectory.SRC.toString())){
+        		if(panelCount!=5||((antResources.get(AntDirectory.LIB.toString()).equalsIgnoreCase("")||antResources.get(AntDirectory.LIB.toString())==null))){
+        			 if(!antResourcesStr.contains(AntDirectory.PROJECT_FOLDER.toString())){
+         				JOptionPane.showMessageDialog(panel, "Project Folder"+" Incomplete data entry");
+         			
+         			}else if(!antResourcesStr.contains(AntDirectory.SRC.toString())){
     				JOptionPane.showMessageDialog(panel, "Configure Source Folder"+" Incomplete data entry");
-        			}
-        			else if(!antResourcesStr.contains(AntDirectory.PROJECT_FOLDER.toString())){
-        				JOptionPane.showMessageDialog(panel, "project folder"+" Incomplete data entry");
-        			
         			}
         			else if(!antResourcesStr.contains(AntDirectory.TESTSRC.toString())){
         				JOptionPane.showMessageDialog(panel, "Test folder"+" Incomplete data entry");
         			
+        			}
+        			else if(!antResourcesStr.contains(AntDirectory.WEBCONTENT.toString())){
+        				JOptionPane.showMessageDialog(panel, "WebContent folder"+" Incomplete data entry");        			
         			}
         			else {
         				JOptionPane.showMessageDialog(panel, "Lib folder"+" Incomplete data entry");
@@ -146,8 +164,8 @@ public class MaventoANTPanel extends JPanel {
     			} else{
     				JOptionPane.showMessageDialog(panel, antResourcesStr);
     				Convertor convertor = new Convertor();
-            		convertor.convertAntToMaven(antResources);
-            		JOptionPane.showMessageDialog(panel, "Maven Project created succesfully!!!");
+            		String mavenProjectFolder = convertor.convertAntToMaven(antResources);
+            		JOptionPane.showMessageDialog(panel, "Maven Project created succesfully at " + mavenProjectFolder);
     			}
     		
         		
@@ -156,25 +174,20 @@ public class MaventoANTPanel extends JPanel {
         });
        // navigateTab(panel,tabbedPane,3,"Next");       
         
+        navigateTabBack(panel,tabbedPane,3,"Back");
+        
         return panel;
     }
     
     protected JComponent makeSourceFolderPanel(String text, final JTabbedPane tabbedPane) {
         JPanel panel = new JPanel(false);
-       
-        JLabel filler = new JLabel(text);
-        filler.setHorizontalAlignment(JLabel.LEFT);
-        filler.setVerticalAlignment(JLabel.TOP);
+        JLabel desc = new JLabel();
+        desc.setText("Enter Source folder with reference to project root (Ex: src)");
+        panel.add(desc);
         JTextField sourceFolderPath = new JTextField(20);
-       
-		//String sourceFolder = projectFolderPath.getSelectedText());
-		panel.add(filler);
         panel.add(sourceFolderPath);
-        
+        navigateTabNext(panel,tabbedPane,2,"Next",AntDirectory.SRC.toString(),sourceFolderPath);   
         navigateTabBack(panel,tabbedPane,0,"Back");
-        
-        navigateTabNext(panel,tabbedPane,2,"Next",AntDirectory.SRC.toString(),sourceFolderPath);       
-        
         return panel;
     }
     

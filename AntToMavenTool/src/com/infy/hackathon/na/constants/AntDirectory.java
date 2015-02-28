@@ -5,7 +5,7 @@ public enum AntDirectory {
 	PROJECT_FOLDER,
 	SRC,
 	LIB,
-	WEBAPP,
+	WEBCONTENT,
 	TESTSRC
 	
 

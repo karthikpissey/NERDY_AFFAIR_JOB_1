@@ -38,15 +38,15 @@ public class Convertor {
 
 	}*/
 	
-	public boolean convertAntToMaven(Map<String, String> antResources){
+	public String convertAntToMaven(Map<String, String> antResources){
 		
 		ResourceUtil resourceUtil=new ResourceUtil();
-		
+		String mavenProjectFolder = "";
 		try {
 			if(resourceUtil.createProjectResource()){
 				Convertor convertor = new Convertor();
 
-				convertor.copyFilesToMaven(antResources);
+				mavenProjectFolder = convertor.copyFilesToMaven(antResources);
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -56,10 +56,10 @@ public class Convertor {
 			e.printStackTrace();
 		}	
 		
-		return true;
+		return mavenProjectFolder;
 	}
 
-	public void copyFilesToMaven(Map<String, String> antResources) throws Exception {
+	public String copyFilesToMaven(Map<String, String> antResources) throws Exception {
 		
 		String antProjectFolder = antResources.get(AntDirectory.PROJECT_FOLDER.toString());
 		ResourceBundle mavenResources = ResourceBundle.getBundle("MavenResources");
@@ -85,13 +85,7 @@ public class Convertor {
 		String antLibDir = antProjectFolder + "//" + antResources.get(AntDirectory.LIB.toString());
 		new PomGenerator().pomFileGenerator(antLibDir, mavenProjectFolder);
 		
-		//Copying the webcontent files
-		//copyFiles(AntDirectory.WEBAPP,MavenDirectory.SRC_MAIN_WEBAPP);
-		
-		//Copying the Test Files
-		//copyFiles(AntDirectory.TESTSRC,MavenDirectory.SRC_TEST_JAVA);
-		
-
+		return mavenProjectFolder;
 	}
 
 public void copyFiles(String antDir,String mavenDir, String fileExtension) throws Exception{		

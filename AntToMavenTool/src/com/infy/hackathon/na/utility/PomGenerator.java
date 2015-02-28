@@ -59,6 +59,7 @@ public class PomGenerator {
 			String pomFilePath = targetMavenDir+"\\pom.xml";
 			File file = new File(pomFilePath);
 			String result="failure";
+			Writer writer = null;
 			try{
 				if(!file.exists())
 				 file.createNewFile();
@@ -66,7 +67,7 @@ public class PomGenerator {
 				 file.delete();
 				 file.createNewFile();
 				}
-				Writer w = new FileWriter(file);
+				writer = new FileWriter(file);
 				Model model = new Model();
 				model.setGroupId( "CUSTOM-APPNAME" );
 				model.setArtifactId("CUSTOM-APPNAME");
@@ -87,10 +88,19 @@ public class PomGenerator {
 				}
 				
 				model.setDependencies(dependencyList);
-				new MavenXpp3Writer().write(w, model);
+				new MavenXpp3Writer().write(writer, model);
 				result = "success";
 			}catch(Exception e){
 				e.printStackTrace();
+			}finally {
+				try {
+					writer.flush();
+					writer.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
 			}
 			return result;
 		
