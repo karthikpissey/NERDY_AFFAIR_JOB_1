@@ -7,7 +7,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -39,25 +41,25 @@ public class MaventoANTPanel extends JPanel {
         //projectFolderPanel.setPreferredSize(new Dimension(600, 400));
        // JTextComponent jTextField = new JTextField();
         tabbedPane.addTab("Project Folder", icon, projectFolderPanel,
-                "Does nothing");
+                "Update Project Folder");
         
         tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
          
         JComponent panel2 = makeSourceFolderPanel("Enter Source Folder Path",tabbedPane);
         tabbedPane.addTab("Configure Source", icon, panel2,
-                "Does twice as much nothing");
+                "Update Source Folder Name");
         tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
          
         JComponent panel3 = makeTestFolderPanel("Enter JUnit Test Folder Path", tabbedPane);
         tabbedPane.addTab("Configure Test", icon, panel3,
-                "Still does nothing");
+                "Update Test Folder Name");
         tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
          
         JComponent panel4 = makeLibraryPanel(
                 "Enter Lib Folder Path", tabbedPane);
         panel4.setPreferredSize(new Dimension(410, 50));
         tabbedPane.addTab("Configure Libraries", icon, panel4,
-                "Does nothing at all");
+                "Update Lib Folder Name");
         tabbedPane.setMnemonicAt(3, KeyEvent.VK_4);
          
         //Add the tabbed pane to this panel.
@@ -120,13 +122,35 @@ public class MaventoANTPanel extends JPanel {
         		antResources.put(AntDirectory.LIB.toString(), libFolderPath.getText());
         		System.out.println("antResources: " + antResources);
         		String antResourcesStr = "";
+        		int panelCount=0;
         		for(Map.Entry<String, String> entry : antResources.entrySet()){
+        			panelCount++;
         			antResourcesStr = antResourcesStr + entry.getKey() + ": " + entry.getValue() + "\n";
-        		}
-        		JOptionPane.showMessageDialog(panel, antResourcesStr);
-        		Convertor convertor = new Convertor();
-        		convertor.convertAntToMaven(antResources);
-        		JOptionPane.showMessageDialog(panel, "Maven Project created succesfully!!!");
+        			}
+        		if(panelCount!=4||((antResources.get(AntDirectory.LIB.toString()).equalsIgnoreCase("")||antResources.get(AntDirectory.LIB.toString())==null))){
+        			if(!antResourcesStr.contains(AntDirectory.SRC.toString())){
+    				JOptionPane.showMessageDialog(panel, "Configure Source Folder"+" Incomplete data entry");
+        			}
+        			else if(!antResourcesStr.contains(AntDirectory.PROJECT_FOLDER.toString())){
+        				JOptionPane.showMessageDialog(panel, "project folder"+" Incomplete data entry");
+        			
+        			}
+        			else if(!antResourcesStr.contains(AntDirectory.TESTSRC.toString())){
+        				JOptionPane.showMessageDialog(panel, "Test folder"+" Incomplete data entry");
+        			
+        			}
+        			else {
+        				JOptionPane.showMessageDialog(panel, "Lib folder"+" Incomplete data entry");
+        			}
+        			
+    			} else{
+    				JOptionPane.showMessageDialog(panel, antResourcesStr);
+    				Convertor convertor = new Convertor();
+            		convertor.convertAntToMaven(antResources);
+            		JOptionPane.showMessageDialog(panel, "Maven Project created succesfully!!!");
+    			}
+    		
+        		
         	}
         	
         });
@@ -168,7 +192,7 @@ public class MaventoANTPanel extends JPanel {
          });
     }
     
-    private void navigateTabNext(JPanel panel,final JTabbedPane tabbedPane,final int index, String label,
+    private void navigateTabNext(final JPanel panel,final JTabbedPane tabbedPane,final int index, String label,
     		final String panelKey, final JTextField folderName){
     	 JButton backButton = new JButton(label);
          backButton.setBounds(75, 82, 90, 31);
@@ -176,16 +200,21 @@ public class MaventoANTPanel extends JPanel {
          panel.add(backButton);
          backButton.addActionListener(new ActionListener() {
          	public void actionPerformed(ActionEvent arg0) {
+         		if(folderName.getText().equalsIgnoreCase("")){
+         			JOptionPane.showMessageDialog(panel, "No Data Entry!!");
+         		}
+         		else{
          		antResources.put(panelKey, folderName.getText());
          		System.out.println("folderName.getSelectedText(): " + folderName.getText());
          		System.out.println("antResources: " + antResources);
          		tabbedPane.setSelectedIndex(index);
+         		}
          	}
          	
          });
     }
     
-    private void navigateTab(JPanel panel,final JTabbedPane tabbedPane,final int index, String label
+    private void navigateTab(final JPanel panel,final JTabbedPane tabbedPane,final int index,final String label
     		){
     	 JButton backButton = new JButton(label);
          backButton.setBounds(75, 82, 90, 31);
@@ -206,7 +235,7 @@ public class MaventoANTPanel extends JPanel {
         //filler.setHorizontalAlignment(JLabel.LEFT);
        // filler.setVerticalAlignment(JLabel.TOP);
         final JTextField projectFolderPath = new JTextField(20);
-       
+        projectFolderPath.setEditable(false);
         panel.add(filler);
         panel.add(projectFolderPath);
         
@@ -220,6 +249,8 @@ public class MaventoANTPanel extends JPanel {
                 filedilg.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                 filedilg.showOpenDialog(filedilg);
                 String fileName=filedilg.getSelectedFile().getAbsolutePath();
+                if(fileName.equalsIgnoreCase("")){
+                }
                 projectFolderPath.setText(fileName);
                 System.out.println("fileName: " + fileName);
                 antResources.put(AntDirectory.PROJECT_FOLDER.toString(), fileName);
