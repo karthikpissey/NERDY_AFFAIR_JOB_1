@@ -24,7 +24,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.infy.hackathon.na.constants.MavenArtifactBean;
 
-public class PomDependencyGenerator {
+public class PomGenerator {
 	private static final String MAVEN_KEY_SEARCH_URL="http://search.maven.org/solrsearch/select?q=";
 	private static final String KEY_SEARCH_PARAMS="&rows=20&wt=json";
 	private static final String MAVEN_CHECKSUM_URL="http://search.maven.org/solrsearch/select?q=1:%22";
@@ -38,7 +38,7 @@ public class PomDependencyGenerator {
 			String libDir="C:\\Users\\kalluri\\git\\hackathon\\NERDY_AFFAIR_JOB_1\\SampleWebAppAnt\\WebContent\\WEB-INF\\lib"; 
 			String targetMavenDir="C:\\SampleMavenApp"; 
 			try{
-			new PomDependencyGenerator().pomFileGenerator(libDir, targetMavenDir);
+			new PomGenerator().pomFileGenerator(libDir, targetMavenDir);
 			}catch(Exception e){
 				
 			}
@@ -54,7 +54,7 @@ public class PomDependencyGenerator {
 		
 	public String pomFileGenerator(String libDir, String targetMavenDir){
 		
-			List<MavenArtifactBean> pomDependencies = PomDependencyGenerator
+			List<MavenArtifactBean> pomDependencies = PomGenerator
 					.getPomDependencies(libDir,targetMavenDir);
 			String pomFilePath = targetMavenDir+"\\pom.xml";
 			File file = new File(pomFilePath);
@@ -107,9 +107,9 @@ public class PomDependencyGenerator {
 		String checkSum = ChecksumUtility.getCheckSum(jarFilePath);
 		System.out.println("JarName::"+jarName);
 		JsonObject obj;
-		obj = PomDependencyGenerator.invokeMavenRepoService(CHECKSUM_SEARCH, checkSum);
+		obj = PomGenerator.invokeMavenRepoService(CHECKSUM_SEARCH, checkSum);
 		List<MavenArtifactBean> mavenArtifacts = new ArrayList<MavenArtifactBean>();
-		mavenArtifacts.addAll(PomDependencyGenerator.getAllMavenArtifactBeans(obj, jarName));
+		mavenArtifacts.addAll(PomGenerator.getAllMavenArtifactBeans(obj, jarName));
 		MavenArtifactBean returnMavenArtifactBean = null;
 		if (mavenArtifacts != null) {
 			Collections.sort(mavenArtifacts,
@@ -118,7 +118,7 @@ public class PomDependencyGenerator {
 					.size() == 0) ? null : mavenArtifacts.get(0);
 		}
 		if (mavenArtifacts == null || mavenArtifacts.size() == 0) {
-			obj = PomDependencyGenerator.invokeMavenRepoService(JARNAME_SEARCH, jarName);
+			obj = PomGenerator.invokeMavenRepoService(JARNAME_SEARCH, jarName);
 			mavenArtifacts.addAll(getAllMavenArtifactBeans(obj, jarName));
 			Collections.sort(mavenArtifacts,
 					new MavenArtifactBean().new SortBasedOnRank());
@@ -237,7 +237,7 @@ public class PomDependencyGenerator {
 				 */
 				if (jarFilePath.endsWith(".jar")) {
 					try {
-						MavenArtifactBean artifactId = PomDependencyGenerator
+						MavenArtifactBean artifactId = PomGenerator
 								.getArtifactId(jarFilePath,targetMavenDir);
 						if (artifactId != null)
 							dependencyBeans.add(artifactId);

@@ -18,6 +18,7 @@ import org.apache.commons.io.filefilter.IOFileFilter;
 
 import com.infy.hackathon.na.constants.AntDirectory;
 import com.infy.hackathon.na.constants.MavenDirectory;
+import com.infy.hackathon.na.utility.PomGenerator;
 
 /**
  * @author test
@@ -81,6 +82,8 @@ public class Convertor {
 		String mavenTestResDir = mavenProjectFolder+ mavenResources.getString(MavenDirectory.SRC_TEST_RESOURCES.toString());
 		copyFiles(antTestDir, mavenTestResDir, ".properties");
 		
+		String antLibDir = antProjectFolder + "//" + antResources.get(AntDirectory.LIB.toString());
+		new PomGenerator().pomFileGenerator(antLibDir, mavenProjectFolder);
 		
 		//Copying the webcontent files
 		//copyFiles(AntDirectory.WEBAPP,MavenDirectory.SRC_MAIN_WEBAPP);
