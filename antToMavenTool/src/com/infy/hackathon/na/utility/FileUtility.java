@@ -1,6 +1,5 @@
 package com.infy.hackathon.na.utility;
 
-public class FileHandlingUtility {
-	
+public class FileUtility {
 
 }
