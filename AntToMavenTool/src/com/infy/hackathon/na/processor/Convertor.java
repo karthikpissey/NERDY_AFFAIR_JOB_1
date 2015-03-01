@@ -6,10 +6,15 @@ package com.infy.hackathon.na.processor;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
@@ -102,7 +107,8 @@ public class Convertor {
 		String mavenWebDir = mavenProjectFolder
 				+ mavenResources.getString(MavenDirectory.SRC_MAIN_WEBAPP
 						.toString());
-		copyFiles(antWebDir, mavenWebDir, null);
+		String arr[] = new String[]{"jar","class"};
+		copyFilesExclusion(antWebDir, mavenWebDir,arr);
 
 		String antLibDir = antProjectFolder + "//"
 				+ antResources.get(AntDirectory.LIB.toString());
@@ -132,29 +138,51 @@ public class Convertor {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		String antDir = "C:/workspace/NERDY_AFFAIR_JOB_1/SampleWebAppAnt/src";
-		String mavenDir = "C:/SampleMavenApp/src/main/java";
-
-		new Convertor().copyFiles(antDir, mavenDir, "properties");
+		String antDir = "C:/workspace/NERDY_AFFAIR_JOB_1/SampleWebAppAnt/WebContent";
+		String mavenDir = "C:/SampleMavenApp/src/main/webapp";
+		String arr[] = new String[]{"jar","class"};
+		new Convertor().copyFilesExclusion(antDir, mavenDir,arr);
+		
 	}
 	
-	public void copyFilesExclusion(String antDir, String mavenDir){
+	public void copyFilesExclusion(String antDir, String mavenDir,String...exts) throws Exception{
 		
 		File antFile = new File(antDir);
 		
+		
 		Collection<File> listFiles = FileUtils.listFiles(antFile, null, true);
+		HashSet<String> excludeExts = new HashSet<String>();
+		for (File file : listFiles) {
+			 String fileExt = file.toString().substring(file.toString().lastIndexOf(".")+1);
+			 excludeExts.add(fileExt);
+			 
+			 
+			
+		}
+		for(String extns:exts)
+		 excludeExts.remove(extns);
+		
+		String []returnArray = new String[excludeExts.size()];
+		
+		 Iterator<String> iterator = excludeExts.iterator();
+		 int i=0;
+		 while(iterator.hasNext()){
+			 returnArray[i]=iterator.next();
+			 i++;
+		 }
+		 copyFiles(antDir, mavenDir,returnArray);
 		
 	}
 
-	public void copyFiles(String antDir, String mavenDir, String fileExtension)
+	public void copyFiles(String antDir, String mavenDir, String... extension)
 			throws Exception {
 
 		File antFile = new File(antDir);
 		File mavenFile = new File(mavenDir);
 
-		if (fileExtension != null) {
+		if (extension != null && extension.length!=0) {
 
-			String[] extension = new String[] { fileExtension };
+			
 
 			List<File> files = (List<File>) FileUtils.listFiles(antFile,
 					extension, true);
